@@ -274,19 +274,18 @@ with tabs[0]:
         <div style="font-size:0.95rem; font-weight:700; letter-spacing:0.3px;">
             Web Application for Homework 3 – Machine Learning Course MECE 6373
         </div>
-        <div style="font-size:2rem; font-weight:800; margin-top:0.35rem;">
+        <div style="font-size:0.95rem; font-weight:600; margin-top:0.3rem; opacity:0.95;">
+            Done By : Mohamed Amine Alouani & Ansh Kamboj, Group 14
+        </div>
+        <div style="font-size:2rem; font-weight:800; margin-top:0.7rem;">
             Percussion-Based Delamination Detection
         </div>
         <div class="hero-small">
             Bonus-point web application for automated hit segmentation, feature extraction,
             and healthy / unhealthy classification using the saved Homework 3 models.
         </div>
-        <div class="hero-small" style="margin-top:0.8rem;">
-            Test number 3
-        </div>
     </div>
     """, unsafe_allow_html=True)
-
     c1, c2 = st.columns([1.4, 1])
 
     with c1:
