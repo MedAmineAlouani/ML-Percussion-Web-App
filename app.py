@@ -22,7 +22,7 @@ LABEL_MAP = {0: "Healthy", 1: "Unhealthy"}
 MODEL_ORDER = ["KNN", "Decision Tree", "Logistic Regression", "SVM"]
 
 st.set_page_config(
-    page_title="Delamination Detector",
+    page_title="Homework 3 Delamination Detector",
     page_icon="🔊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -30,20 +30,103 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    .main {
+        background: #fafbfc;
+    }
+
+    .hero-card {
+        background: linear-gradient(135deg, #1f3c88 0%, #4b6cb7 60%, #6f86d6 100%);
+        color: white;
+        padding: 2rem 2rem 1.5rem 2rem;
+        border-radius: 20px;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    }
+
+    .hero-small {
+        font-size: 0.95rem;
+        opacity: 0.92;
+        margin-top: 0.35rem;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        padding: 1rem 1rem 0.8rem 1rem;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+        margin-bottom: 1rem;
+    }
+
     div[data-testid="stMetric"] {
         background: linear-gradient(135deg, #667eea11 0%, #764ba211 100%);
         border: 1px solid #e0e0e0;
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 16px;
     }
+
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+        gap: 10px;
     }
+
     .stTabs [data-baseweb="tab"] {
-        border-radius: 8px 8px 0 0;
-        padding: 8px 20px;
+        border-radius: 10px 10px 0 0;
+        padding: 10px 20px;
     }
-    .stDataFrame {border-radius: 8px; overflow: hidden;}
+
+    .pipeline-step {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        padding: 1rem 0.8rem;
+        text-align: center;
+        height: 100%;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .pipeline-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .pipeline-title {
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+
+    .pipeline-desc {
+        font-size: 0.88rem;
+        color: #5f6368;
+    }
+
+    .mini-badge {
+        display: inline-block;
+        background: #eef2ff;
+        color: #2c3e94;
+        border: 1px solid #cdd7ff;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-right: 0.4rem;
+        margin-top: 0.25rem;
+    }
+
+    .good-box {
+        background: #edf8ef;
+        border: 1px solid #c9e7cf;
+        color: #1f6b2c;
+        border-radius: 14px;
+        padding: 0.8rem 1rem;
+    }
+
+    .bad-box {
+        background: #fff1f1;
+        border: 1px solid #f1c5c5;
+        color: #8b2323;
+        border-radius: 14px;
+        padding: 0.8rem 1rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -71,7 +154,7 @@ def plot_waveform_and_envelope(result: FileResult):
     fig.patch.set_facecolor("white")
 
     t_raw = np.arange(len(result.raw_waveform)) / result.sr
-    axes[0].plot(t_raw, result.raw_waveform, color="#4a6fa5", linewidth=0.4, alpha=0.85)
+    axes[0].plot(t_raw, result.raw_waveform, color="#4a6fa5", linewidth=0.4, alpha=0.9)
     axes[0].set_ylabel("Amplitude", fontsize=10)
     axes[0].set_title("Raw Waveform", fontsize=12, fontweight="bold")
     axes[0].grid(True, alpha=0.25)
@@ -79,7 +162,6 @@ def plot_waveform_and_envelope(result: FileResult):
     t_trim = np.arange(len(result.trimmed_waveform)) / result.sr
     axes[1].plot(t_trim, result.trimmed_waveform, color="#4a6fa5", linewidth=0.35, alpha=0.45, label="Trimmed signal")
     axes[1].plot(t_trim, result.envelope, color="#e07a3a", linewidth=1.0, label="Envelope")
-
     axes[1].axhline(result.threshold, color="#d62828", linestyle="--", linewidth=1.0, label="Threshold")
 
     if len(result.peaks) > 0:
@@ -111,7 +193,7 @@ def plot_hit_waveform(hit, sr):
     fig, ax = plt.subplots(figsize=(10, 3), dpi=110)
     fig.patch.set_facecolor("white")
     t = np.arange(len(hit.waveform)) / sr
-    ax.plot(t, hit.waveform, color="#4a6fa5", linewidth=0.6)
+    ax.plot(t, hit.waveform, color="#4a6fa5", linewidth=0.7)
     ax.set_xlabel("Time (s)", fontsize=10)
     ax.set_ylabel("Amplitude", fontsize=10)
     ax.set_title(f"Hit {hit.index + 1} Waveform", fontsize=12, fontweight="bold")
@@ -125,6 +207,7 @@ def plot_psd(psd_vec, sr):
     fig.patch.set_facecolor("white")
     freqs = np.linspace(0, sr / 2, len(psd_vec))
     ax.plot(freqs, psd_vec, color="#6a4c93", linewidth=1.0)
+    ax.fill_between(freqs, psd_vec, alpha=0.12, color="#6a4c93")
     ax.set_xlabel("Frequency (Hz)", fontsize=10)
     ax.set_ylabel("Log PSD", fontsize=10)
     ax.set_title("Power Spectral Density", fontsize=12, fontweight="bold")
@@ -137,7 +220,7 @@ def plot_mfcc(mfcc_mean, mfcc_std, n_mfcc):
     fig, ax = plt.subplots(figsize=(10, 3), dpi=110)
     fig.patch.set_facecolor("white")
     x = np.arange(n_mfcc)
-    ax.bar(x, mfcc_mean, yerr=mfcc_std, capsize=3, color="#2a9d8f", alpha=0.85)
+    ax.bar(x, mfcc_mean, yerr=mfcc_std, capsize=3, color="#2a9d8f", alpha=0.9)
     ax.set_xlabel("MFCC Coefficient", fontsize=10)
     ax.set_ylabel("Value", fontsize=10)
     ax.set_title("MFCC Mean ± Std", fontsize=12, fontweight="bold")
@@ -186,31 +269,92 @@ tabs = st.tabs([
 
 
 with tabs[0]:
-    st.title("Percussion-Based Delamination Detection")
     st.markdown("""
-    This app follows the final Homework 3 notebook pipeline as closely as possible.
+    <div class="hero-card">
+        <div style="font-size:0.95rem; font-weight:700; letter-spacing:0.3px;">
+            Web Application for Homework 3 – Machine Learning Course MECE 6373
+        </div>
+        <div style="font-size:2rem; font-weight:800; margin-top:0.35rem;">
+            Percussion-Based Delamination Detection
+        </div>
+        <div class="hero-small">
+            Bonus-point web application for automated hit segmentation, feature extraction,
+            and healthy / unhealthy classification using the saved Homework 3 models.
+        </div>
+        <div class="hero-small" style="margin-top:0.8rem;">
+            Test number 3
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    Workflow:
-    1. Upload `.wav` file(s)
-    2. Normalize audio
-    3. Ignore first 0.15 s for hit detection
-    4. Build moving-average envelope of `abs(signal)`
-    5. Detect peaks
-    6. Extract fixed hit windows
-    7. Extract PSD + MFCC features
-    8. Scale features with saved scaler
-    9. Predict with 4 saved models
-    """)
+    c1, c2 = st.columns([1.4, 1])
 
-    st.subheader("Filename Convention")
-    st.markdown("""
-    - `*_g.wav` → Healthy
-    - `*_b.wav` → Unhealthy
-    """)
+    with c1:
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        st.subheader("What this app does")
+        st.markdown("""
+        This app reproduces the final Homework 3 notebook workflow as closely as possible.
+
+        It allows you to:
+        - upload one or more `.wav` percussion recordings
+        - split multi-hit recordings into individual impacts
+        - extract PSD and MFCC features
+        - scale the features with the saved homework scaler
+        - classify each hit with four trained machine learning models
+        - inspect segmentation, features, and predictions visually
+        """)
+        st.markdown("""
+        <span class="mini-badge">KNN</span>
+        <span class="mini-badge">Decision Tree</span>
+        <span class="mini-badge">Logistic Regression</span>
+        <span class="mini-badge">SVM</span>
+        """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with c2:
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        st.subheader("Filename convention")
+        st.markdown("""
+        Use these suffixes for labeled files:
+        - `*_g.wav` → Healthy
+        - `*_b.wav` → Unhealthy
+        """)
+        st.markdown('<div class="good-box"><b>Healthy:</b> intact / good bonding</div>', unsafe_allow_html=True)
+        st.markdown('<div style="height:0.5rem;"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="bad-box"><b>Unhealthy:</b> delaminated / damaged</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("### Pipeline Overview")
+    pcols = st.columns(6)
+    steps = [
+        ("📤", "Upload", "Upload one or more WAV files"),
+        ("✂️", "Segment", "Detect and isolate individual hits"),
+        ("📈", "PSD", "Extract spectral energy features"),
+        ("🎼", "MFCC", "Extract cepstral audio features"),
+        ("⚖️", "Scale", "Apply the saved homework scaler"),
+        ("🤖", "Predict", "Run all four trained models"),
+    ]
+
+    for col, (icon, title, desc) in zip(pcols, steps):
+        with col:
+            st.markdown(f"""
+            <div class="pipeline-step">
+                <div class="pipeline-icon">{icon}</div>
+                <div class="pipeline-title">{title}</div>
+                <div class="pipeline-desc">{desc}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("### Notebook-faithful settings")
+    st.info(
+        "This app uses the Homework 3 segmentation and feature settings from config.json, "
+        "including the same hit windowing, PSD extraction, MFCC extraction, and saved scaler."
+    )
 
 
 with tabs[1]:
     st.header("Upload & Process")
+    st.markdown("Upload one or more `.wav` files and run the same pipeline used in the homework notebook.")
 
     uploaded = st.file_uploader(
         "Choose WAV file(s)",
@@ -238,19 +382,27 @@ with tabs[1]:
             progress.progress(1.0, text="Done!")
             st.session_state.results = results
 
-            total_hits = sum(len(r.hits) for r in results)
-            labeled = sum(1 for r in results if r.true_label is not None)
+        if st.session_state.results:
+            total_hits = sum(len(r.hits) for r in st.session_state.results)
+            labeled = sum(1 for r in st.session_state.results if r.true_label is not None)
 
             c1, c2, c3 = st.columns(3)
-            c1.metric("Files processed", len(results))
+            c1.metric("Files processed", len(st.session_state.results))
             c2.metric("Total hits detected", total_hits)
             c3.metric("Files with labels", labeled)
 
-            for r in results:
-                if len(r.hits) > 0:
-                    st.success(f"{r.filename} — {len(r.hits)} hit(s) detected")
-                else:
-                    st.warning(f"{r.filename} — No hits detected")
+            st.markdown("### File processing summary")
+            for r in st.session_state.results:
+                with st.expander(r.filename, expanded=False):
+                    c1, c2, c3 = st.columns(3)
+                    c1.write(f"**Sample rate:** {r.sr} Hz")
+                    c2.write(f"**Detected hits:** {len(r.hits)}")
+                    c3.write(f"**True label:** {LABEL_MAP[r.true_label] if r.true_label is not None else 'Not available'}")
+
+                    if len(r.hits) > 0:
+                        st.success("Processing completed successfully.")
+                    else:
+                        st.warning("No hits were detected in this file.")
 
 
 with tabs[2]:
@@ -263,20 +415,20 @@ with tabs[2]:
         sel = st.selectbox("Select a file", file_names, key="seg_file")
         result = st.session_state.results[file_names.index(sel)]
 
-        st.write("Sample rate:", result.sr)
-        st.write("Detected hits:", len(result.hits))
-        st.write("Threshold:", float(result.threshold))
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Sample rate", f"{result.sr} Hz")
+        c2.metric("Detected hits", len(result.hits))
+        c3.metric("Threshold", f"{result.threshold:.4f}")
 
         fig = plot_waveform_and_envelope(result)
         st.pyplot(fig, use_container_width=True)
         plt.close(fig)
 
-        if result.features is not None:
-            st.write("Feature matrix shape:", result.features.shape)
-            st.write("Scaled feature matrix shape:", result.scaled_features.shape)
-
-        st.markdown("### Current parameters")
-        st.json(config)
+        with st.expander("Debug information", expanded=False):
+            if result.features is not None:
+                st.write("Feature matrix shape:", result.features.shape)
+                st.write("Scaled feature matrix shape:", result.scaled_features.shape)
+            st.json(config)
 
         if result.hits:
             st.markdown("### Individual hit previews")
@@ -318,14 +470,18 @@ with tabs[3]:
             c1, c2 = st.columns(2)
 
             with c1:
+                st.markdown("#### PSD")
                 fig_psd = plot_psd(psd_vec, r.sr)
                 st.pyplot(fig_psd, use_container_width=True)
                 plt.close(fig_psd)
+                st.caption("Welch PSD, log-scaled, then truncated/padded to 128 bins.")
 
             with c2:
+                st.markdown("#### MFCC")
                 fig_mfcc = plot_mfcc(mfcc_mean, mfcc_std, n_mfcc)
                 st.pyplot(fig_mfcc, use_container_width=True)
                 plt.close(fig_mfcc)
+                st.caption("13 MFCC coefficients summarized by mean and standard deviation.")
 
 
 with tabs[4]:
@@ -341,14 +497,14 @@ with tabs[4]:
                 continue
 
             for h in r.hits:
-                row = {"File": r.filename, "Hit": h.index + 1}
+                row = {
+                    "File": r.filename,
+                    "Hit": h.index + 1,
+                }
+
                 for m in MODEL_ORDER:
                     pred = int(r.predictions[m][h.index])
                     row[m] = LABEL_MAP[pred]
-
-                votes = [r.predictions[m][h.index] for m in MODEL_ORDER]
-                majority = int(np.round(np.mean(votes)))
-                row["Majority Vote"] = LABEL_MAP[majority]
 
                 if r.true_label is not None:
                     row["True Label"] = LABEL_MAP[r.true_label]
@@ -357,9 +513,11 @@ with tabs[4]:
 
         if all_rows:
             df = pd.DataFrame(all_rows)
+
+            st.subheader("Hit-level predictions")
             st.dataframe(df, use_container_width=True, hide_index=True)
 
-            st.markdown("## File-Level Summary")
+            st.subheader("File-level summary")
 
             for r in st.session_state.results:
                 if r.predictions is None or len(r.hits) == 0:
@@ -373,13 +531,17 @@ with tabs[4]:
                     pct_unhealthy = r.predictions[m].mean() * 100
                     cols[i].metric(m, f"{pct_unhealthy:.0f}% unhealthy")
 
-                all_votes = np.array([r.predictions[m] for m in MODEL_ORDER])
-                majority_per_hit = np.round(all_votes.mean(axis=0)).astype(int)
-                pct = majority_per_hit.mean() * 100
-                cols[-1].metric("Majority Vote", f"{pct:.0f}% unhealthy")
+                svm_pct = r.predictions["SVM"].mean() * 100
+                svm_label = "Unhealthy" if svm_pct >= 50 else "Healthy"
+                cols[-1].metric("Recommended (SVM)", svm_label)
 
             csv = df.to_csv(index=False)
-            st.download_button("Download predictions CSV", csv, "predictions.csv", "text/csv")
+            st.download_button(
+                "Download predictions CSV",
+                csv,
+                "predictions.csv",
+                "text/csv"
+            )
 
 
 with tabs[5]:
@@ -448,15 +610,17 @@ with tabs[6]:
     st.header("About This App")
 
     st.markdown("""
-    This app uses the saved Homework 3 models and the same notebook-style pipeline.
+    This is a **web application for Homework 3 in Machine Learning Course MECE 6373**.
+    It was developed as a **bonus-point application** to demonstrate the full notebook pipeline
+    in an interactive and user-friendly format.
 
-    ### Final model results from the homework
-    - SVM: 80.42% test accuracy
-    - Logistic Regression: 74.87% test accuracy
-    - KNN: 65.08% test accuracy
-    - Decision Tree: 62.96% test accuracy
+    ### Final homework model results
+    - **SVM:** 80.42% test accuracy
+    - **Logistic Regression:** 74.87% test accuracy
+    - **KNN:** 65.08% test accuracy
+    - **Decision Tree:** 62.96% test accuracy
 
-    ### Important segmentation settings
+    ### Segmentation settings
     - ignore_start_sec = 0.15
     - envelope_win_sec = 0.01
     - min_peak_distance_sec = 0.30
@@ -464,16 +628,16 @@ with tabs[6]:
     - pre_hit_sec = 0.016
     - post_hit_sec = 0.08
 
-    ### Important feature settings
+    ### Feature settings
     - n_mfcc = 13
     - n_fft = 2048
     - hop_length = 512
     - n_psd_bins = 128
 
-    ### Feature vector
-    - PSD = 128 values
-    - MFCC mean/std = 26 values
-    - Total = 154 features
+    ### Final feature vector
+    - 128 PSD features
+    - 26 MFCC summary features
+    - total = 154 features
     """)
 
     with st.expander("Show loaded config"):
