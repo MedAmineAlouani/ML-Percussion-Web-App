@@ -115,40 +115,43 @@ def _fig(figsize=(10, 3)):
     fig.patch.set_facecolor("white")
     return fig, ax
 
-
 def plot_waveform_and_envelope(result: FileResult):
-    """Raw waveform + envelope + detected peaks."""
-    t = np.arange(len(result.raw_waveform)) / result.sr
-
-    fig, axes = plt.subplots(2, 1, figsize=(10, 5), dpi=110, sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(10, 5), dpi=110, sharex=False)
     fig.patch.set_facecolor("white")
 
-    # Waveform
-    axes[0].plot(t, result.raw_waveform, color="#4a6fa5", linewidth=0.4, alpha=0.85)
+    # Raw waveform
+    t_raw = np.arange(len(result.raw_waveform)) / result.sr
+    axes[0].plot(t_raw, result.raw_waveform, color="#4a6fa5", linewidth=0.4, alpha=0.85)
     axes[0].set_ylabel("Amplitude", fontsize=10)
     axes[0].set_title("Raw Waveform", fontsize=12, fontweight="bold")
     axes[0].grid(True, alpha=0.25)
 
-    # Envelope + peaks
-    axes[1].plot(t, result.envelope, color="#e07a3a", linewidth=0.8, label="Envelope")
+    # Trimmed waveform + envelope + peaks
+    t_trim = np.arange(len(result.trimmed_waveform)) / result.sr
+    axes[1].plot(t_trim, result.trimmed_waveform, color="#4a6fa5", linewidth=0.35, alpha=0.45, label="Trimmed signal")
+    axes[1].plot(t_trim, result.envelope, color="#e07a3a", linewidth=1.0, label="Envelope")
+
+    if result.threshold is not None:
+        axes[1].axhline(result.threshold, color="#d62828", linestyle="--", linewidth=1.0, label="Threshold")
+
     if len(result.peaks) > 0:
         axes[1].plot(
             result.peaks / result.sr,
             result.envelope[result.peaks],
-            "v", color="#d62828", markersize=8, label=f"Peaks ({len(result.peaks)})",
+            "v",
+            color="#d62828",
+            markersize=7,
+            label=f"Peaks ({len(result.peaks)})",
         )
-    # Mark hit windows
-    cfg_seg = config["segmentation"]
-    pre = cfg_seg["pre_hit_sec"]
-    post = cfg_seg["post_hit_sec"]
+
     for h in result.hits:
         t_start = h.start_sample / result.sr
         t_end = h.end_sample / result.sr
         axes[1].axvspan(t_start, t_end, alpha=0.12, color="#2a9d8f")
 
-    axes[1].set_ylabel("Envelope", fontsize=10)
+    axes[1].set_ylabel("Amplitude / Envelope", fontsize=10)
     axes[1].set_xlabel("Time (s)", fontsize=10)
-    axes[1].set_title("Envelope & Detected Peaks", fontsize=12, fontweight="bold")
+    axes[1].set_title("Trimmed Signal, Envelope, and Detected Peaks", fontsize=12, fontweight="bold")
     axes[1].legend(fontsize=9, loc="upper right")
     axes[1].grid(True, alpha=0.25)
 
