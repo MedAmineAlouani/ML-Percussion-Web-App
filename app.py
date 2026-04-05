@@ -551,7 +551,7 @@ with tabs[5]:
             acc_cols[i].metric(
                 m,
                 f"{acc:.1f}%",
-                delta=f"HW3 test: {hw_test:.1f}%",
+                delta=f"Training test acc: {hw_test:.1f}%",
                 delta_color="off",
             )
 
@@ -616,7 +616,7 @@ with tabs[6]:
        applied to normalize features.
     5. **Classification** – four models predict each hit independently:
 
-    | Model | HW3 Test Accuracy |
+    | Model | Test Accuracy |
     |-------|-------------------|
     | KNN | 69.0% |
     | Decision Tree | 53.4% |
