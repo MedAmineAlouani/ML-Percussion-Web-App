@@ -1,0 +1,42 @@
+{
+    "segmentation": {
+        "ignore_start_sec": 0.15,
+        "envelope_win_sec": 0.01,
+        "min_peak_distance_sec": 0.3,
+        "peak_height_factor": 2.5,
+        "pre_hit_sec": 0.016,
+        "post_hit_sec": 0.08
+    },
+    "feature_extraction": {
+        "n_mfcc": 13,
+        "n_fft": 2048,
+        "hop_length": 512,
+        "n_psd_bins": 128
+    },
+    "labels": {
+        "healthy": 0,
+        "unhealthy": 1
+    },
+    "model_results": {
+        "KNN": {
+            "train_acc": 0.9826676714393369,
+            "val_acc": 0.9736379613356766,
+            "test_acc": 0.6904761904761905
+        },
+        "Decision Tree": {
+            "train_acc": 1.0,
+            "val_acc": 0.8224956063268892,
+            "test_acc": 0.5343915343915344
+        },
+        "Logistic Regression": {
+            "train_acc": 0.9050489826676714,
+            "val_acc": 0.8558875219683656,
+            "test_acc": 0.7354497354497355
+        },
+        "SVM": {
+            "train_acc": 0.9939713639788997,
+            "val_acc": 0.9507908611599297,
+            "test_acc": 0.7883597883597884
+        }
+    }
+}
