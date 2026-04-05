@@ -81,10 +81,8 @@ def load_audio(file_bytes: bytes) -> Tuple[np.ndarray, int]:
 
 def normalize_signal(signal: np.ndarray) -> np.ndarray:
     max_val = np.max(np.abs(signal))
-
     if max_val == 0:
         return signal
-
     return signal / max_val
 
 
